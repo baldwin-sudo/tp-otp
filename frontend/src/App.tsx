@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, Route, Routes, useLocation, useParams } from "react-router-dom";
 
-const API_URL = import.meta.env.API_URL ?? "http://localhost:8080";
+const API_URL = "";
 
 function Home() {
   return (
