@@ -1,16 +1,22 @@
 import { useEffect, useState } from "react";
-import { Link, Route, Routes, useLocation } from "react-router-dom";
+import { Link, Route, Routes, useLocation, useParams } from "react-router-dom";
+
+const API_URL = import.meta.env.API_URL ?? "http://localhost:8080";
 
 function Home() {
   return (
-    <div className="text-black text-2xl">
+    <div className="text-gray-800 text-2xl">
       Home
-      <ul className="text-xl text-blue-600 underline">
+      <ul className="text-xl text-indigo-600 underline mt-4">
         <li>
-          <Link to="/users">Users List</Link>
+          <Link to="/users" className="hover:text-indigo-800">
+            Users List
+          </Link>
         </li>
         <li>
-          <Link to="/createUser">Create User</Link>
+          <Link to="/createUser" className="hover:text-indigo-800">
+            Create User
+          </Link>
         </li>
       </ul>
     </div>
@@ -35,7 +41,7 @@ function UserCreateForm() {
     }
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:8080/api/users", {
+      const res = await fetch(`${API_URL}/api/users`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -52,9 +58,6 @@ function UserCreateForm() {
       setName("");
       setPhoneNumber("");
       setEmail("");
-      //TODO: decide
-      // optional: navigate to /users instead of reloading
-      // window.location.href = "/users";
     } catch (err: any) {
       setError(err.message || "Failed to create user");
     } finally {
@@ -63,35 +66,41 @@ function UserCreateForm() {
   };
 
   return (
-    <div className="p-4 max-w-md mx-auto">
-      <h2 className="text-2xl mb-4">Create User</h2>
+    <div className="p-6 max-w-md mx-auto">
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">Create User</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm mb-1">Name</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Name
+          </label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full border p-2"
+            className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
             placeholder="Full name"
           />
         </div>
         <div>
-          <label className="block text-sm mb-1">Email</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Email
+          </label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full border p-2"
+            className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
             placeholder="email@example.com"
           />
         </div>
         <div>
-          <label className="block text-sm mb-1">Phone Number</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Phone Number
+          </label>
           <input
             type="number"
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
-            className="w-full border p-2"
+            className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
             placeholder="0x xx xx xx xx"
           />
         </div>
@@ -99,17 +108,22 @@ function UserCreateForm() {
           <button
             type="submit"
             disabled={loading}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:text-blue-500 hover:bg-white hover:border"
+            className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:bg-gray-400 transition"
           >
             {loading ? "Creating..." : "Create User"}
           </button>
-          {success && <span className="ml-3 text-green-600">Created</span>}
-          {error && <span className="ml-3 text-red-600">{error}</span>}
+          {success && (
+            <span className="ml-3 text-emerald-600 font-medium">Created</span>
+          )}
+          {error && (
+            <span className="ml-3 text-rose-600 font-medium">{error}</span>
+          )}
         </div>
       </form>
     </div>
   );
 }
+
 function UserUpdateForm() {
   const { state } = useLocation();
   const passedUser = state?.user;
@@ -117,7 +131,6 @@ function UserUpdateForm() {
   const params = new URLSearchParams(window.location.search);
   const id = passedUser?.id ?? params.get("id");
 
-  // Initialize with passed user data if available
   const [name, setName] = useState(passedUser?.name ?? "");
   const [phoneNumber, setPhoneNumber] = useState(passedUser?.phoneNumber ?? "");
   const [email, setEmail] = useState(passedUser?.email ?? "");
@@ -126,7 +139,6 @@ function UserUpdateForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Fetch user if no state was passed (direct URL navigation)
   useEffect(() => {
     if (passedUser) {
       setInitialLoading(false);
@@ -141,7 +153,7 @@ function UserUpdateForm() {
 
     const fetchUser = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/users/${id}`);
+        const res = await fetch(`${API_URL}/api/users/${id}`);
         if (!res.ok) {
           throw new Error("Failed to fetch user");
         }
@@ -176,7 +188,7 @@ function UserUpdateForm() {
 
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:8080/api/users/${id}`, {
+      const res = await fetch(`${API_URL}/api/users/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -202,39 +214,45 @@ function UserUpdateForm() {
   };
 
   if (initialLoading) {
-    return <div className="p-4">Loading user...</div>;
+    return <div className="p-4 text-gray-600">Loading user...</div>;
   }
 
   return (
-    <div className="p-4 max-w-md mx-auto">
-      <h2 className="text-2xl mb-4">Update User</h2>
+    <div className="p-6 max-w-md mx-auto">
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">Update User</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm mb-1">Name</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Name
+          </label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full border p-2"
+            className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-amber-500"
             placeholder="Full name"
           />
         </div>
         <div>
-          <label className="block text-sm mb-1">Email</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Email
+          </label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full border p-2"
+            className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-amber-500"
             placeholder="email@example.com"
           />
         </div>
         <div>
-          <label className="block text-sm mb-1">Phone Number</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Phone Number
+          </label>
           <input
             type="text"
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
-            className="w-full border p-2"
+            className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-amber-500"
             placeholder="0x xx xx xx xx"
           />
         </div>
@@ -242,106 +260,248 @@ function UserUpdateForm() {
           <button
             type="submit"
             disabled={loading}
-            className="bg-yellow-600 text-white px-4 py-2 rounded hover:text-yellow-500 hover:bg-white hover:border"
+            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700 disabled:bg-gray-400 transition"
           >
             {loading ? "Updating..." : "Update User"}
           </button>
-          <Link to="/users" className="text-blue-600 underline">
+          <Link
+            to="/users"
+            className="text-indigo-600 hover:text-indigo-800 underline"
+          >
             Cancel
           </Link>
-          {success && <span className="ml-3 text-green-600">Updated</span>}
-          {error && <span className="ml-3 text-red-600">{error}</span>}
+          {success && (
+            <span className="ml-3 text-emerald-600 font-medium">Updated</span>
+          )}
+          {error && (
+            <span className="ml-3 text-rose-600 font-medium">{error}</span>
+          )}
         </div>
       </form>
     </div>
   );
 }
+
 function UsersList({ users }: { users: any[] }) {
   return (
     <div>
-      <h1 className="text-bold text-2xl text-center  text-green-50 bg-green-500">
-        users List :
+      <h1 className="text-bold text-2xl text-center text-white bg-indigo-600 py-3">
+        Users List
       </h1>
-      <table className="min-w-full border-collapse">
-        <thead>
-          <tr className="text-left border-b">
-            <th className="p-2">ID</th>
-            <th className="p-2">Name</th>
-            <th className="p-2">Email</th>
-            <th className="p-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.length === 0 ? (
-            <tr>
-              <td colSpan={4} className="p-2">
-                No users
-              </td>
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="bg-gray-200 text-left border-b">
+              <th className="p-3 font-semibold text-gray-700">ID</th>
+              <th className="p-3 font-semibold text-gray-700">Name</th>
+              <th className="p-3 font-semibold text-gray-700">Email</th>
+              <th className="p-3 font-semibold text-gray-700">Actions</th>
             </tr>
-          ) : (
-            users.map((user: any) => (
-              <tr key={user.id} className="border-b">
-                <td className="p-2">{user.id}</td>
-                <td className="p-2">{user.name}</td>
-                <td className="p-2">{user.email}</td>
-                <td className="p-2 space-x-2">
-                  <Link
-                    to={`/users/${user.id}`}
-                    className="text-blue-600 underline"
-                  >
-                    Show
-                  </Link>
-                  <Link
-                    to={`/UpdateUser?id=${user.id}`}
-                    className="text-yellow-600 underline"
-                    state={{ user }}
-                  >
-                    Edit
-                  </Link>
-                  <button className="text-red-600 underline">Delete</button>
+          </thead>
+          <tbody>
+            {users.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="p-3 text-center text-gray-500">
+                  No users
                 </td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+            ) : (
+              users.map((user: any) => (
+                <tr key={user.id} className="border-b hover:bg-gray-50">
+                  <td className="p-3 text-gray-800">{user.id}</td>
+                  <td className="p-3 text-gray-800">{user.name}</td>
+                  <td className="p-3 text-gray-800">{user.email}</td>
+                  <td className="p-3 space-x-3">
+                    <Link
+                      to={`/users/${user.id}`}
+                      className="text-indigo-600 hover:text-indigo-800 underline"
+                      state={{ user }}
+                    >
+                      Show
+                    </Link>
+                    <Link
+                      to={`/UpdateUser?id=${user.id}`}
+                      className="text-amber-600 hover:text-amber-800 underline"
+                      state={{ user }}
+                    >
+                      Edit
+                    </Link>
+                    <button className="text-rose-600 hover:text-rose-800 underline">
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
+
+function UserDetails() {
+  const { id } = useParams();
+  const [user, setUser] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!id) {
+      setError("Missing user id");
+      setLoading(false);
+      return;
+    }
+
+    const fetchUser = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/users/${id}`);
+        if (!res.ok) {
+          throw new Error("Failed to fetch user");
+        }
+        const data = await res.json();
+        setUser(data.user);
+      } catch (err: any) {
+        setError(err.message || "Failed to load user");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [id]);
+
+  if (loading) {
+    return <div className="p-4 text-gray-600">Loading user...</div>;
+  }
+
+  if (error) {
+    return <div className="p-4 text-rose-600 font-medium">{error}</div>;
+  }
+
+  if (!user || !id) {
+    return <div className="p-4 text-gray-600">User not found</div>;
+  }
+
+  return (
+    <div className="p-6 max-w-md mx-auto">
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">User Details</h2>
+      <div className="space-y-3 bg-gray-50 p-4 rounded">
+        <div>
+          <strong className="text-gray-700">ID:</strong>{" "}
+          <span className="text-gray-600">{id}</span>
+        </div>
+        <div>
+          <strong className="text-gray-700">Name:</strong>{" "}
+          <span className="text-gray-600">{user.name}</span>
+        </div>
+        <div>
+          <strong className="text-gray-700">Email:</strong>{" "}
+          <span className="text-gray-600">{user.email}</span>
+        </div>
+        <div>
+          <strong className="text-gray-700">Phone:</strong>{" "}
+          <span className="text-gray-600">{user.phoneNumber ?? "-"}</span>
+        </div>
+      </div>
+      <div className="mt-6 space-x-3">
+        <Link
+          to="/users"
+          className="text-indigo-600 hover:text-indigo-800 underline"
+        >
+          Back to list
+        </Link>
+        <Link
+          to={`/UpdateUser?id=${user.id}`}
+          state={{ user }}
+          className="text-amber-600 hover:text-amber-800 underline"
+        >
+          Edit
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function HealthIndicator() {
+  const [isHealthy, setIsHealthy] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkHealth = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/health`, {
+          method: "GET",
+        });
+        setIsHealthy(res.ok);
+      } catch (error) {
+        setIsHealthy(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkHealth();
+    const interval = setInterval(checkHealth, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="flex items-center gap-2 ml-auto">
+      <div
+        className={`w-4 h-4 rounded-full transition ${
+          isHealthy ? "bg-emerald-500" : "bg-rose-500"
+        } ${loading ? "opacity-50" : "opacity-100"}`}
+        title={isHealthy ? "Server healthy" : "Server unhealthy"}
+      />
+      <span className="text-sm text-white font-medium">
+        {isHealthy ? "Server Up" : "Server Down"}
+      </span>
+    </div>
+  );
+}
+
 function App() {
   const [users, setusers] = useState([]);
   const location = useLocation();
 
   useEffect(() => {
     const fetchUsers = async () => {
-      const res = await fetch("http://localhost:8080/api/users");
+      const res = await fetch(`${API_URL}/api/users`);
       const users = await res.json();
       console.log("users log : ", users);
       setusers(users.users);
     };
     fetchUsers();
   }, [location.pathname]);
+
   return (
     <>
       <div>
-        <ul className="text-xl text-cyan-200 underline bg-amber-800 flex  gap-5 items-center justify-center py-2 ">
-          <li className="hover:bg-yellow-200 hover:text-blue-600">
-            <Link to="/users">Users List</Link>
-          </li>
-          <li className="hover:bg-yellow-200 hover:text-blue-600">
-            <Link to="/createUser">Create User</Link>
-          </li>
-        </ul>
-        <div className="min-w-3/4 w-3/4 mx-auto border-2 my-2 border-red-500 ">
+        <nav className="bg-gradient-to-r from-indigo-600 to-indigo-700 shadow-lg">
+          <div className="flex gap-8 items-center justify-between px-6 py-3">
+            <ul className="flex gap-6">
+              <li className="hover:bg-indigo-500 px-3 py-2 rounded transition">
+                <Link to="/users" className="text-white font-medium">
+                  Users List
+                </Link>
+              </li>
+              <li className="hover:bg-indigo-500 px-3 py-2 rounded transition">
+                <Link to="/createUser" className="text-white font-medium">
+                  Create User
+                </Link>
+              </li>
+            </ul>
+            <HealthIndicator />
+          </div>
+        </nav>
+        <div className="w-full max-w-5xl mx-auto my-6 border border-gray-200 rounded-lg shadow-sm">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/users" element={<UsersList users={users} />} />
             <Route path="/createUser" element={<UserCreateForm />} />
             <Route path="/UpdateUser" element={<UserUpdateForm />} />
-            <Route
-              path="/users/:id"
-              element={<div className="p-4">User details not implemented</div>}
-            />
+            <Route path="/users/:id" element={<UserDetails />} />
           </Routes>
         </div>
       </div>
