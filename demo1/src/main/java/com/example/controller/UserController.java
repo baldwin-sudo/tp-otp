@@ -2,6 +2,7 @@ package com.example.controller;
 
 import com.example.bean.User;
 import com.example.dto.UserCreateDto;
+import com.example.dto.UserDto;
 import com.example.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,7 +74,7 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable("id") long id) {
         try {
-            User user = userService.findById(id);
+            UserDto user = userService.findById(id);
 
             if (user == null) {
                 Map<String, Object> errorBody = new HashMap<>();

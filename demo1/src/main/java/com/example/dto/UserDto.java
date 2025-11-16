@@ -6,11 +6,11 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.format.annotation.NumberFormat;
 
-@Getter
-@Setter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@Data  // Génère automatiquement equals(), hashCode(), toString(), getters, setters
+
+
 public class UserDto {
     private Long id;
     @NotNull

@@ -38,14 +38,14 @@ public class UserService {
         User u = optionalUser.get();
         return new UserDto(u.getId(),u.getName(),u.getEmail(),u.getPhoneNumber());
     }
-    public User findById(long id){
+    public UserDto findById(long id){
         Optional<User> optionalUser=  userRepository.findById(id);
         if (optionalUser.isEmpty()){
             return null ;
 
         }
         User u = optionalUser.get();
-        return u;
+        return new UserDto(u.getId(),u.getName(),u.getEmail(),u.getPhoneNumber());
 
     }
     public int create(UserCreateDto userCreateDto) {

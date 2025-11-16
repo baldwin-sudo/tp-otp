@@ -6,9 +6,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-@Getter
-@Setter
-@ToString
+@Data  // Génère automatiquement equals(), hashCode(), toString(), getters, setters
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserCreateDto {
