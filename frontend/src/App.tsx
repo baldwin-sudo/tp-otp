@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, Route, Routes, useLocation, useParams } from "react-router-dom";
 
-const API_URL = "";
+const API_URL = import.meta.env.VITE_API_URL ?? "";
 
 function Home() {
   return (
@@ -326,9 +326,6 @@ function UsersList({ users }: { users: any[] }) {
                     >
                       Edit
                     </Link>
-                    <button className="text-rose-600 hover:text-rose-800 underline">
-                      Delete
-                    </button>
                   </td>
                 </tr>
               ))

@@ -1,8 +1,12 @@
 package com.example.controller;
 
+import com.example.utils.HttpClientUtility;
+import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import static com.example.utils.HttpClientUtility.*;
 
 @RestController
 @RequestMapping("/api")
@@ -10,8 +14,21 @@ import org.springframework.web.bind.annotation.*;
 
 public class DefaultController {
     public DefaultController() {}
-    @GetMapping("/health")
-    public ResponseEntity<?> getMapping(){
+    @GetMapping("/health-api")
+    public ResponseEntity<?> getApi(){
         return  ResponseEntity.status(HttpStatus.OK).body("healthy");
+    }
+    @GetMapping("/health-message-server")
+    public ResponseEntity<?> getMessageServer(){
+        // TODO: send healthy req to the server
+        try {
+
+        //    JSONObject jsonObject = get("http://localhost:8080/health");
+            return  ResponseEntity.status(HttpStatus.OK).body("healthy");
+
+        } catch (Exception e) {
+        return  ResponseEntity.status(HttpStatus.OK).body("not healthy");
+        }
+
     }
 }

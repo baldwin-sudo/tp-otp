@@ -52,6 +52,7 @@ public class UserServiceTest {
         List<UserDto> actual= userService.findAll();
         assertEquals(expected,actual);
     }
+    // this  method was done with the help of ai
     /**
      * Scénario 1 : Données valides - User créé avec succès
      */
@@ -86,6 +87,7 @@ public class UserServiceTest {
         assertEquals("0611111111", capturedUser.getPhoneNumber());
     }
 
+    // this  method was done with the help of ai
     /**
      * Scénario 2 : Données invalides - User n'a pas d'ID après sauvegarde
      */

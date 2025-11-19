@@ -11,13 +11,14 @@ import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+// this class was  done with the help of ai
 /**
  * Mock implémentation de UserRepository pour développement
  * Simule une base de données en mémoire
- 
+
  */
 @Repository
-@Profile("dev")
+
 public class MockedUserRepository implements UserRepository {
 
     private Map<Long, User> users = new HashMap<>();
@@ -242,5 +243,10 @@ public class MockedUserRepository implements UserRepository {
 
     public int getTotalUsers() {
         return users.size();
+    }
+
+    @Override
+    public Optional<User> findByPhoneNumber(String phoneNumber) {
+        return Optional.empty();
     }
 }
