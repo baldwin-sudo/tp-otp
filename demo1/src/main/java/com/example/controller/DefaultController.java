@@ -13,6 +13,7 @@ import static com.example.utils.HttpClientUtility.*;
 @CrossOrigin(origins = "*",methods = {RequestMethod.PUT,RequestMethod.POST,RequestMethod.GET,RequestMethod.OPTIONS}) // allow only this origin
 
 public class DefaultController {
+
     public DefaultController() {}
     @GetMapping("/health-api")
     public ResponseEntity<?> getApi(){
@@ -22,9 +23,15 @@ public class DefaultController {
     public ResponseEntity<?> getMessageServer(){
         // TODO: send healthy req to the server
         try {
+            JSONObject response = HttpClientUtility.get("http://dosipa.univ-brest.fr/ping");
+            String message = response.getString("status");
+            if (message!=null  && message.equals("OK")) {
 
-        //    JSONObject jsonObject = get("http://localhost:8080/health");
             return  ResponseEntity.status(HttpStatus.OK).body("healthy");
+
+            }
+            throw  new Exception("unhealthy");
+        //    JSONObject jsonObject = get("http://localhost:8080/health");
 
         } catch (Exception e) {
         return  ResponseEntity.status(HttpStatus.OK).body("not healthy");

@@ -5,6 +5,8 @@ import com.example.bean.User;
 import com.example.dto.UserDto;
 import com.example.repository.AuthRepository;
 import com.example.repository.UserRepository;
+import com.example.utils.HttpClientUtility;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,10 +17,11 @@ public class AuthService {
 
     @Autowired
     private AuthRepository authRepository;
-
+    private String OtpServer="http://dosipa.univ-brest.fr";
     @Autowired
     private UserRepository userRepository;
     private String createOtpFromServer(String phoneNumber){
+        //JSONObject response = HttpClientUtility.post(OtpServer + "/")
         return "otp";
     }
     public int createOtp(String phoneNumber) throws Exception {

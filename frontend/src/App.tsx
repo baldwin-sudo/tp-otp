@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, Route, Routes, useLocation, useParams } from "react-router-dom";
 
-const API_URL = import.meta.env.VITE_API_URL ?? "";
+const API_URL = import.meta.env.VITE_API_URL;
 
 function Home() {
   return (
@@ -421,39 +421,79 @@ function UserDetails() {
 }
 
 function HealthIndicator() {
-  const [isHealthy, setIsHealthy] = useState(true);
+  const [isApiHealthy, setIsApiHealthy] = useState(true);
+  const [isMessageHealthy, setIsMessageHealthy] = useState(true);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkHealth = async () => {
+    const checkApiHealth = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/health`, {
+        const res = await fetch(`${API_URL}/api/health-api`, {
           method: "GET",
         });
-        setIsHealthy(res.ok);
+        const resJson = await res.json();
+        console.log("server api :" + resJson);
+        setIsApiHealthy(true);
       } catch (error) {
-        setIsHealthy(false);
+        setIsApiHealthy(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+    const checkMessageServerHealth = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/health-message-server`, {
+          method: "GET",
+        });
+        const status = await res.json();
+        console.log(status);
+
+        setIsMessageHealthy(true);
+      } catch (error) {
+        setIsMessageHealthy(false);
       } finally {
         setLoading(false);
       }
     };
 
-    checkHealth();
-    const interval = setInterval(checkHealth, 10000);
+    const runChecks = async () => {
+      await Promise.all([checkApiHealth(), checkMessageServerHealth()]);
+      setLoading(false);
+    };
+
+    runChecks();
+    const interval = setInterval(runChecks, 10000);
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="flex items-center gap-2 ml-auto">
-      <div
-        className={`w-4 h-4 rounded-full transition ${
-          isHealthy ? "bg-emerald-500" : "bg-rose-500"
-        } ${loading ? "opacity-50" : "opacity-100"}`}
-        title={isHealthy ? "Server healthy" : "Server unhealthy"}
-      />
-      <span className="text-sm text-white font-medium">
-        {isHealthy ? "Server Up" : "Server Down"}
-      </span>
+    <div className=" flex gap-1 flex-col">
+      <div className="flex items-center gap-2 ">
+        <div
+          className={`w-4 h-4 rounded-full transition ${
+            isApiHealthy ? "bg-emerald-500" : "bg-rose-500"
+          } ${loading ? "opacity-50" : "opacity-100"}`}
+          title={isApiHealthy ? "Api Server healthy" : "Api Server unhealthy"}
+        />
+        <span className="text-sm text-white font-medium">
+          {isApiHealthy ? "Api Server Up" : "Api Server Down"}
+        </span>
+      </div>
+      <div className="flex items-center gap-2 ml-auto">
+        <div
+          className={`w-4 h-4 rounded-full transition ${
+            isMessageHealthy ? "bg-emerald-500" : "bg-rose-500"
+          } ${loading ? "opacity-50" : "opacity-100"}`}
+          title={
+            isMessageHealthy
+              ? "Message Server healthy"
+              : "Message Server unhealthy"
+          }
+        />
+        <span className="text-sm text-white font-medium">
+          {isMessageHealthy ? "Message Server Up" : "Message Server Down"}
+        </span>
+      </div>
     </div>
   );
 }
