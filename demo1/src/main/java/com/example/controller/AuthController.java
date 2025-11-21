@@ -4,6 +4,7 @@ package com.example.controller;
 import com.example.dto.VerifyOtpDto;
 
 import com.example.service.AuthService;
+import com.example.utils.SmsApiClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,36 +15,36 @@ import org.springframework.web.bind.annotation.*;
 
 public class AuthController {
    private AuthService authService;
+   private SmsApiClient smsApiClient        ;
    @Autowired
-   public AuthController(AuthService authService) {
+   public AuthController(AuthService authService,SmsApiClient smsApiClient) {
        this.authService = authService;
+       this.smsApiClient = smsApiClient;
    }
     @PostMapping("/send-otp")
-    public ResponseEntity<?> requestingOtp(@RequestParam String phoneNumber){
+    public ResponseEntity<?> requestingOtp(@RequestParam String email){
         try {
-            if(authService.createOtp(phoneNumber)==1){
+            if(authService.createOtp(email)==1){
                 return ResponseEntity.ok().body("otp sent . check your phone");
             }
+            throw new Exception("error sending otp .");
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(e.getMessage());
         }
-        return ResponseEntity.ok().body("error sending otp .");
-
-
-
 
     }
     @PostMapping("/verify-otp")
     public ResponseEntity<?> verifyOtp(@RequestBody VerifyOtpDto verifyOtpDto){
         try {
-            if (authService.verifyOtp(verifyOtpDto.getOtp(),verifyOtpDto.getPhoneNumber())==1){
+            if (authService.verifyOtp(verifyOtpDto.getOtp(),verifyOtpDto.getEmail())==1){
                 return ResponseEntity.ok().body("otp verified");
 
             }
               throw new Exception("error verifying otp");
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.ok().body("error verifying otp");
+            return ResponseEntity.status(500).body(e.getMessage());
         }
     }
 

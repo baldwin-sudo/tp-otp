@@ -249,4 +249,9 @@ public class MockedUserRepository implements UserRepository {
     public Optional<User> findByPhoneNumber(String phoneNumber) {
         return Optional.empty();
     }
+
+    @Override
+    public Optional<User> findByEmail(String email) {
+        return Optional.empty();
+    }
 }

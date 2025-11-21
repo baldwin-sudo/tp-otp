@@ -5,7 +5,7 @@ import com.example.bean.User;
 import com.example.dto.UserDto;
 import com.example.repository.AuthRepository;
 import com.example.repository.UserRepository;
-import com.example.utils.HttpClientUtility;
+import com.example.utils.SmsApiClient;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,51 +14,65 @@ import java.util.Optional;
 
 @Service
 public class AuthService {
+    @Autowired
+    SmsApiClient smsApiClient;
 
     @Autowired
     private AuthRepository authRepository;
-    private String OtpServer="http://dosipa.univ-brest.fr";
     @Autowired
     private UserRepository userRepository;
-    private String createOtpFromServer(String phoneNumber){
-        //JSONObject response = HttpClientUtility.post(OtpServer + "/")
+    private String generateOtp(){
+
         return "otp";
     }
-    public int createOtp(String phoneNumber) throws Exception {
-        Optional<User> userOpt = userRepository.findByPhoneNumber(phoneNumber);
+
+    public int createOtp(String email) throws Exception {
+        Optional<User> userOpt = userRepository.findByEmail(email);
 
         if (userOpt.isEmpty()) {
-            System.out.println("no such user exists: " + phoneNumber);
-            return 0;
+          throw new Exception(" no such user found with number " + email);
         }
 
         User user = userOpt.get();
+        System.out.printf("user : "+ user);
+
+        // delete all existing otps for this user before sending
+        // because unverified otps remain in the db
+        authRepository.deleteAllByIdUser(user.getId());
 
         // Use constructor - it sets createdOn
-        String otp =createOtpFromServer(user.getPhoneNumber());
+        String otp =generateOtp();
         // TODO: hash the otp
-        String hashedOtp = otp;
+        String hashedOtp = hashOtp(otp);
         Auth auth = new Auth(otp, hashedOtp, user.getId());
 
         authRepository.save(auth);
-
+        // send otp
+        smsApiClient.sendSms(user.getPhoneNumber(), otp);
         if (auth.getId() != null) {
             System.out.println("OTP created: " + auth.getId());
             return 1;
         } else {
-            System.out.println("Error creating OTP");
-            return 0;
+           throw new Exception("Error Creating OTP ");
         }
     }
 
-    public int verifyOtp(String otp, String phoneNumber) throws Exception    {
-        Optional<User> userOpt = userRepository.findByPhoneNumber(phoneNumber);
-        if (userOpt.isEmpty()) return 0;
+    private String hashOtp(String otp) {
+        return otp;
+    }
+
+    public int verifyOtp(String otp, String email) throws Exception    {
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) throw new Exception("no such user exists: " + email);
 
         User user = userOpt.get();
         Optional<Auth> authOpt = authRepository.findByOtpClairAndIdUser(otp, user.getId());
-        if  (authOpt.isEmpty()) return 0;
+        if  (authOpt.isEmpty()) throw new Exception("no otp found : " + email);
+
         Auth auth = authOpt.get();
+        if (!auth.getOtpClair().equals(otp)) {
+            throw new Exception("Invalid OTP");
+        }
         authRepository.delete(auth);
         return  1;
     }

@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { Link, Route, Routes, useLocation, useParams } from "react-router-dom";
+import {
+  Link,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -10,7 +17,7 @@ function Home() {
       <ul className="text-xl text-indigo-600 underline mt-4">
         <li>
           <Link to="/users" className="hover:text-indigo-800">
-            Users List
+            Users ListHe
           </Link>
         </li>
         <li>
@@ -419,7 +426,6 @@ function UserDetails() {
     </div>
   );
 }
-
 function HealthIndicator() {
   const [isApiHealthy, setIsApiHealthy] = useState(true);
   const [isMessageHealthy, setIsMessageHealthy] = useState(true);
@@ -428,37 +434,27 @@ function HealthIndicator() {
   useEffect(() => {
     const checkApiHealth = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/health-api`, {
-          method: "GET",
-        });
-        const resJson = await res.json();
-        console.log("server api :" + resJson);
-        setIsApiHealthy(true);
-      } catch (error) {
+        const res = await fetch(`${API_URL}/api/health-api`);
+
+        if (res.ok) setIsApiHealthy(true);
+      } catch {
         setIsApiHealthy(false);
-      } finally {
-        setLoading(false);
       }
     };
+
     const checkMessageServerHealth = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/health-message-server`, {
-          method: "GET",
-        });
-        const status = await res.json();
-        console.log(status);
-
-        setIsMessageHealthy(true);
-      } catch (error) {
+        const res = await fetch(`${API_URL}/api/health-message-server`);
+        if (res.ok) setIsMessageHealthy(true);
+      } catch {
         setIsMessageHealthy(false);
-      } finally {
-        setLoading(false);
       }
     };
 
     const runChecks = async () => {
+      setLoading(true); // start loading
       await Promise.all([checkApiHealth(), checkMessageServerHealth()]);
-      setLoading(false);
+      setLoading(false); // end loading ONLY once
     };
 
     runChecks();
@@ -467,28 +463,23 @@ function HealthIndicator() {
   }, []);
 
   return (
-    <div className=" flex gap-1 flex-col">
-      <div className="flex items-center gap-2 ">
+    <div className="flex gap-1 flex-col">
+      <div className="flex items-center gap-2">
         <div
           className={`w-4 h-4 rounded-full transition ${
             isApiHealthy ? "bg-emerald-500" : "bg-rose-500"
           } ${loading ? "opacity-50" : "opacity-100"}`}
-          title={isApiHealthy ? "Api Server healthy" : "Api Server unhealthy"}
         />
         <span className="text-sm text-white font-medium">
           {isApiHealthy ? "Api Server Up" : "Api Server Down"}
         </span>
       </div>
+
       <div className="flex items-center gap-2 ml-auto">
         <div
           className={`w-4 h-4 rounded-full transition ${
             isMessageHealthy ? "bg-emerald-500" : "bg-rose-500"
           } ${loading ? "opacity-50" : "opacity-100"}`}
-          title={
-            isMessageHealthy
-              ? "Message Server healthy"
-              : "Message Server unhealthy"
-          }
         />
         <span className="text-sm text-white font-medium">
           {isMessageHealthy ? "Message Server Up" : "Message Server Down"}
@@ -497,7 +488,6 @@ function HealthIndicator() {
     </div>
   );
 }
-
 function App() {
   const [users, setusers] = useState([]);
   const location = useLocation();
@@ -528,6 +518,11 @@ function App() {
                   Create User
                 </Link>
               </li>
+              <li className="hover:bg-indigo-500 px-3 py-2 rounded transition">
+                <Link to="/send-otp" className="text-white font-medium">
+                  Send OTP
+                </Link>
+              </li>
             </ul>
             <HealthIndicator />
           </div>
@@ -539,6 +534,8 @@ function App() {
             <Route path="/createUser" element={<UserCreateForm />} />
             <Route path="/UpdateUser" element={<UserUpdateForm />} />
             <Route path="/users/:id" element={<UserDetails />} />
+            <Route path="/send-otp" element={<Login />} />
+            <Route path="/verify-otp" element={<VerifyOtp />} />
           </Routes>
         </div>
       </div>
@@ -547,3 +544,136 @@ function App() {
 }
 
 export default App;
+
+function VerifyOtp() {
+  const location = useLocation();
+  const email = location.state?.email ?? "";
+  const [otp, setOtp] = useState("");
+  const [message, setMessage] = useState("");
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    setMessage("");
+
+    try {
+      const res = await fetch(`${API_URL}/api/auth/verify-otp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, otp }),
+      });
+
+      const text = await res.text();
+      setMessage(text);
+    } catch (err) {
+      setMessage("Error verifying OTP");
+    }
+  };
+
+  return (
+    <div className="p-4 max-w-md mx-auto bg-white rounded-lg shadow">
+      <h2 className="text-2xl font-bold mb-4">
+        Verify OTP for <strong>{email}</strong>
+      </h2>
+
+      <form onSubmit={handleVerifyOtp} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium">OTP Code</label>
+          <input
+            type="text"
+            className="w-full p-2 border rounded"
+            value={otp}
+            onChange={(e) => setOtp(e.target.value)}
+            placeholder="Enter OTP"
+          />
+        </div>
+
+        <button
+          type="submit"
+          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+        >
+          Verify OTP
+        </button>
+      </form>
+
+      {message && (
+        <div className="mt-4 p-2 bg-gray-100 border rounded text-sm">
+          {message}
+        </div>
+      )}
+    </div>
+  );
+}
+function Login() {
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSendOtp = async (e) => {
+    e.preventDefault();
+    setMessage("");
+    setLoading(true); // <-- show "Sending..."
+
+    try {
+      const res = await fetch(`${API_URL}/api/auth/send-otp?email=${email}`, {
+        method: "POST",
+      });
+
+      const text = await res.text();
+      if (res.ok) {
+        setMessage(text);
+        navigate("/verify-otp", { state: { email: email } });
+      }
+      if (res.status == 500) {
+        setError(text);
+      }
+
+      // Only navigate if OTP sent successfully:
+    } catch (err) {
+      setMessage("Error sending OTP");
+    } finally {
+      setLoading(false); // <-- remove loading state
+    }
+  };
+
+  return (
+    <div className="p-4 max-w-md mx-auto bg-white rounded-lg shadow">
+      <h2 className="text-2xl font-bold mb-4">Send OTP</h2>
+
+      <form onSubmit={handleSendOtp} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium">Email :</label>
+          <input
+            type="text"
+            className="w-full p-2 border rounded"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter email"
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className={`px-4 py-2 rounded text-white transition ${
+            loading
+              ? "bg-indigo-400 cursor-not-allowed"
+              : "bg-indigo-600 hover:bg-indigo-700"
+          }`}
+        >
+          {loading ? "Sending OTP..." : "Send OTP"}
+        </button>
+      </form>
+
+      {error && !loading && !message && (
+        <div className="mt-4 p-2 bg-red-100 text-red-500 border rounded text-sm">
+          {error}
+        </div>
+      )}
+    </div>
+  );
+}

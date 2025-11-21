@@ -1,20 +1,24 @@
 package com.example.controller;
 
-import com.example.utils.HttpClientUtility;
+import com.example.utils.SmsApiClient;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import static com.example.utils.HttpClientUtility.*;
+import static org.springframework.http.ResponseEntity.ok;
 
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*",methods = {RequestMethod.PUT,RequestMethod.POST,RequestMethod.GET,RequestMethod.OPTIONS}) // allow only this origin
 
 public class DefaultController {
-
-    public DefaultController() {}
+    SmsApiClient smsApiClient;
+    @Autowired
+    public DefaultController(SmsApiClient smsApiClient) {
+        this.smsApiClient = smsApiClient;
+    }
     @GetMapping("/health-api")
     public ResponseEntity<?> getApi(){
         return  ResponseEntity.status(HttpStatus.OK).body("healthy");
@@ -23,19 +27,15 @@ public class DefaultController {
     public ResponseEntity<?> getMessageServer(){
         // TODO: send healthy req to the server
         try {
-            JSONObject response = HttpClientUtility.get("http://dosipa.univ-brest.fr/ping");
-            String message = response.getString("status");
-            if (message!=null  && message.equals("OK")) {
 
-            return  ResponseEntity.status(HttpStatus.OK).body("healthy");
-
-            }
-            throw  new Exception("unhealthy");
+            System.out.println( smsApiClient.ping());
+            return ResponseEntity.ok(smsApiClient.ping());
         //    JSONObject jsonObject = get("http://localhost:8080/health");
 
         } catch (Exception e) {
         return  ResponseEntity.status(HttpStatus.OK).body("not healthy");
         }
+
 
     }
 }

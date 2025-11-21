@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface AuthRepository extends JpaRepository<Auth, Long> {
     @Query("SELECT a FROM Auth a WHERE a.otpClair = :otp AND a.idUser = :idUser")
     public Optional<Auth> findByOtpClairAndIdUser(String otp,Long idUser    );
+    public void deleteAllByIdUser(Long idUser);
 }
